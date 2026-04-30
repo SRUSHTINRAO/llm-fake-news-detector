@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Fake News Detector</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial;
+            background: linear-gradient(to right, #1e3c72, #2a5298);
+            color: white;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .left {
+            width: 35%;
+            padding: 40px;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .right {
+            width: 65%;
+            padding: 40px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            font-size: 16px;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            background: #00c6ff;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .real { color: #4cd137; }
+        .fake { color: #ff6b6b; }
+        .uncertain { color: #fbc531; }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- LEFT PANEL -->
+    <div class="left">
+        <h2>🧠 AI Fake News Detector</h2>
+
+        <p>This system analyzes credibility of news using AI reasoning.</p>
+
+        <h3>Features</h3>
+        <ul>
+            <li>Single prediction (Real / Fake / Uncertain)</li>
+            <li>AI-based reasoning</li>
+            <li>Handles multiple domains</li>
+        </ul>
+
+        <h3>Tech Stack</h3>
+        <ul>
+            <li>FastAPI</li>
+            <li>Groq LLM (LLaMA 3.1)</li>
+        </ul>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right">
+        <h2>Check News Credibility</h2>
+
+        <textarea id="text" rows="6" placeholder="Paste news or rumor here..."></textarea>
+
+        <button onclick="check()">Analyze</button>
+
+        <div class="box">
+            <h3 id="result"></h3>
+            <p id="exp"></p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+async function check() {
+    let text = document.getElementById("text").value;
+
+    let res = await fetch("/predict", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({text: text})
+    });
+
+    let data = await res.json();
+
+    console.log(data); // debug
+
+    if (data.error) {
+        document.getElementById("result").innerText = data.error;
+        document.getElementById("exp").innerText = "";
+        return;
+    }
+
+    let resultEl = document.getElementById("result");
+    resultEl.innerText = "AI Credibility: " + data.prediction;
+
+    // Color styling
+    if (data.prediction === "Real") {
+        resultEl.className = "real";
+    } else if (data.prediction === "Fake") {
+        resultEl.className = "fake";
+    } else {
+        resultEl.className = "uncertain";
+    }
+
+    document.getElementById("exp").innerText = data.explanation;
+}
+</script>
+
+</body>
+</html>
